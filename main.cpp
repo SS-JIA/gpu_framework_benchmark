@@ -30,7 +30,7 @@ void fill_random(
   }
 }
 
-void run_mnn_matmul(const int M, const int K, const int N) {
+void run_mnn_matmul(const int L) {
   using namespace MNN;
   using namespace MNN::Express;
 
@@ -42,29 +42,32 @@ void run_mnn_matmul(const int M, const int K, const int N) {
   // OpenCLRuntime* runtime = (OpenCLRuntime*)(exe->getRuntime().first[MNN_FORWARD_OPENCL].get());
   // runtime->setGpuMode(MNN_GPU_MEMORY_BUFFER);
 
-  auto input_a = _Input({M, K}, Dimensionformat::NCHW);
-  auto input_b = _Input({K, N}, Dimensionformat::NCHW);
-
   {
     AUTOTIME;
 
-    std::vector<float> a_data(M * K);
+    auto input_a = _Input({L, L}, Dimensionformat::NCHW);
+    auto input_b = _Input({L, L}, Dimensionformat::NCHW);
+
+    std::vector<float> a_data(L * L);
     fill_random(a_data);
-    std::vector<float> b_data(M * K);
+    std::vector<float> b_data(L * L);
     fill_random(b_data);
 
     ::memcpy(input_a->writeMap<float>(), a_data.data(), a_data.size() * sizeof(float));
     ::memcpy(input_b->writeMap<float>(), b_data.data(), b_data.size() * sizeof(float));
 
-    VARP output;
-    output  = _MatMul(input_a, input_b, false, false);
+    VARP out_1  = _MatMul(input_a, input_b, false, false);
+    VARP out_2  = _MatMul(out_1, input_b, false, false);
+    VARP out_3  = _MatMul(out_2, input_b, false, false);
+    VARP out_4  = _MatMul(out_3, input_b, false, false);
+    VARP out_5  = _MatMul(out_4, input_b, false, false);
 
-    auto outputPtr = output->readMap<float>();
+    auto outputPtr = out_5->readMap<float>();
   }
 }
 
 int main() {
-  run_mnn_matmul(512, 1024, 512);
+  run_mnn_matmul(512);
   std::cout << "\ndone!" << std::endl;
   return 0;
 }

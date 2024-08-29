@@ -15,5 +15,6 @@ cmake . \
     -DMNN_OPENCL:BOOL=ON \
     -DMNN_OPENCL_PROFILE=ON \
     -DMNN_GPU_TRACE=ON \
+    -DMNN_PORTABLE_BUILD=ON \
     -B cmake-out
 cmake --build cmake-out -j16 --target benchmark
